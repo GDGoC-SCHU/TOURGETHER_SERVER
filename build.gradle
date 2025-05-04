@@ -4,6 +4,10 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
+ext {
+    springCloudGcpVersion = "6.1.1"
+}
+
 group = 'com.gdc'
 version = '0.0.1-SNAPSHOT'
 
@@ -26,6 +30,7 @@ repositories {
 dependencies {
     // VALIDATION
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 
     // JWT
     compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
@@ -61,6 +66,12 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:$springCloudGcpVersion"
+    }
 }
 
 tasks.named('test') {
