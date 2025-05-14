@@ -25,7 +25,7 @@ public class FirebaseConfig {
 		if (FirebaseApp.getApps().isEmpty()) {
 			GoogleCredentials credentials = GoogleCredentials
 					.fromStream(new ClassPathResource(
-							"tripmate-test-18915-firebase-adminsdk-fbsvc-4c838f02ff.json").getInputStream());
+							"tripmate-test-18915.json").getInputStream());
 
 			FirebaseOptions options = FirebaseOptions.builder()
 					.setCredentials(credentials)
