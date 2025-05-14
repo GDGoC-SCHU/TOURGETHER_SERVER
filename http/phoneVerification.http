@@ -1,0 +1,58 @@
+### 환경 변수 설정
+@baseUrl = http://localhost:8080
+@phoneNumber = +821040659916
+@verificationCode = 123456
+@userId = 1
+
+### 1. 인증 코드 발송 요청
+POST {{baseUrl}}/api/phone/sendVerification
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phoneNumber}}"
+}
+
+### 2. 인증 코드 확인 요청
+POST {{baseUrl}}/api/phone/verifyCode
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phoneNumber}}",
+  "code": "{{verificationCode}}"
+}
+
+### 3. 전화번호 인증 상태 업데이트 요청
+POST {{baseUrl}}/api/users/{{userId}}/verifyPhone
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phoneNumber}}"
+}
+
+### 4. 인증 코드 발송 요청 (Authorization 헤더 포함)
+POST {{baseUrl}}/api/phone/sendVerification
+Content-Type: application/json
+Authorization: Bearer your_jwt_token_here
+
+{
+  "phoneNumber": "{{phoneNumber}}"
+}
+
+### 5. 인증 코드 확인 요청 (Authorization 헤더 포함)
+POST {{baseUrl}}/api/phone/verifyCode
+Content-Type: application/json
+Authorization: Bearer your_jwt_token_here
+
+{
+  "phoneNumber": "{{phoneNumber}}",
+  "code": "{{verificationCode}}"
+}
+
+### 6. 전화번호 인증 상태 업데이트 요청 (Authorization 헤더 포함)
+POST {{baseUrl}}/api/users/{{userId}}/verifyPhone
+Content-Type: application/json
+Authorization: Bearer your_jwt_token_here
+
+{
+  "phoneNumber": "{{phoneNumber}}"
+}

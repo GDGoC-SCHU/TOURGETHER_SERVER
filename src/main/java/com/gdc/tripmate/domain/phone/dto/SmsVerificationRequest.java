@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class FirebasePhoneRequest {
-    private Long userId;
+public class SmsVerificationRequest {
     private String phoneNumber;
-    private String verificationId;
-    private String verificationCode;
+    private Long userId;
 }

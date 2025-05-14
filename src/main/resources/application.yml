@@ -1,7 +1,7 @@
 # application.yml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tripmate
+    url: jdbc:postgresql://localhost:5432/tourgether
     username: jake
     password: nada5011
     driver-class-name: org.postgresql.Driver
@@ -46,8 +46,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET_KEY:abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789}
-  access-token-validity-in-seconds: 3600  # 1??
-  refresh-token-validity-in-seconds: 1209600  # 14?
+  access-token-validity-in-seconds: 3600  # 1H
+  refresh-token-validity-in-seconds: 1209600  # 14D
 
 server:
   port: 8080
@@ -58,5 +58,5 @@ logging:
   level:
     org.springframework.security: DEBUG
     com.gdc.tripmate: DEBUG
-    org.hibernate.SQL: DEBUG
+#    org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
