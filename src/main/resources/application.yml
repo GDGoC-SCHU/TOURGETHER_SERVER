@@ -15,6 +15,11 @@ spring:
         format_sql: true
     show-sql: true
 
+  twilio:
+    account-sid: ${TWILIO_ACCOUNT_SID}  # Twilio 계정 식별자
+    auth-token: ${TWILIO_AUTH_TOKEN}    # Twilio API 인증 토큰
+    verify-service-sid: ${TWILIO_VERIFY_SERVICE_SID}  # Twilio Verify 서비스 SID
+
   security:
     oauth2:
       client:
@@ -56,7 +61,7 @@ server:
 
 logging:
   level:
-    org.springframework.security: DEBUG
+#    org.springframework.security: DEBUG
     com.gdc.tripmate: DEBUG
 #    org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

@@ -28,6 +28,10 @@ repositories {
 }
 
 dependencies {
+    // TWILIO
+    implementation 'com.twilio.sdk:twilio:9.12.0'
+    // 전화번호 국제 포맷 변환 라이브러리
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.0'
     // VALIDATION
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'com.google.firebase:firebase-admin:9.2.0'
