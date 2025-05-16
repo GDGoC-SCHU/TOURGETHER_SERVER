@@ -2,10 +2,10 @@ package com.gdc.tripmate.global.security.jwt;
 
 import com.gdc.tripmate.domain.user.entity.User;
 import com.gdc.tripmate.domain.user.repository.UserRepository;
+import com.gdc.tripmate.global.security.customUser.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,15 +25,10 @@ public class SecurityUtils {
 			return null;
 		}
 
-		// UserDetails로 변환 가능한 경우
-		if (authentication.getPrincipal() instanceof UserDetails) {
-			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-			String username = userDetails.getUsername();
-
-			// 이메일로 사용자 조회
-			return userRepository.findByEmail(username)
-					.map(User::getId)
-					.orElse(null);
+		// CustomUserDetails로 변환 가능한 경우
+		if (authentication.getPrincipal() instanceof CustomUserDetails) {
+			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+			return userDetails.getId();
 		}
 
 		// 기타 경우 (예: OAuth2 인증)
@@ -51,9 +46,9 @@ public class SecurityUtils {
 			return null;
 		}
 
-		// UserDetails로 변환 가능한 경우
-		if (authentication.getPrincipal() instanceof UserDetails) {
-			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		// CustomUserDetails로 변환 가능한 경우
+		if (authentication.getPrincipal() instanceof CustomUserDetails) {
+			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 			String username = userDetails.getUsername();
 
 			// 이메일로 사용자 조회

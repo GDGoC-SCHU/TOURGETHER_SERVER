@@ -1,4 +1,4 @@
-package com.gdc.tripmate.domain.tag.dto;
+package com.gdc.tripmate.domain.tag.dto.response;
 
 import java.util.List;
 import lombok.AllArgsConstructor;

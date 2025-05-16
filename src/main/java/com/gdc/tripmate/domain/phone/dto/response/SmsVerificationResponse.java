@@ -1,4 +1,4 @@
-package com.gdc.tripmate.domain.phone.dto;
+package com.gdc.tripmate.domain.phone.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

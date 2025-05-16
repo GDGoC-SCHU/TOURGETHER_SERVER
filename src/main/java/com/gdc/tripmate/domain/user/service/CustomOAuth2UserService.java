@@ -1,5 +1,7 @@
 package com.gdc.tripmate.domain.user.service;
 
+import com.gdc.tripmate.domain.tag.entity.UserProfile;
+import com.gdc.tripmate.domain.tag.repository.UserProfileRepository;
 import com.gdc.tripmate.domain.user.entity.User;
 import com.gdc.tripmate.domain.user.repository.UserRepository;
 import com.gdc.tripmate.global.security.oauth.OAuthAttributes;
@@ -14,14 +16,17 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
 	private final UserRepository userRepository;
+	private final UserProfileRepository userProfileRepository; // 추가된 의존성
 
 	@Override
+	@Transactional
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 		OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
 		OAuth2User oAuth2User = delegate.loadUser(userRequest);
@@ -45,18 +50,32 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 				attributes.getNameAttributeKey());
 	}
 
-	private User saveOrUpdate(OAuthAttributes attributes) {
+	@Transactional
+	protected User saveOrUpdate(OAuthAttributes attributes) {
 		User user = userRepository.findByEmail(attributes.getEmail())
 				.map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
 				.orElse(attributes.toEntity());
 
-		// 랜덤 닉네임 생성 (이미 존재하는 닉네임이 없을 때만)
-		if (user.getNickname() == null || user.getNickname().isEmpty()) {
+		User savedUser = userRepository.save(user);
+
+		// UserProfile이 없으면 생성
+		UserProfile profile = userProfileRepository.findByUserId(savedUser.getId())
+				.orElse(null);
+
+		if (profile == null) {
+			// 랜덤 닉네임 생성
 			String randomNickname = generateUniqueNickname();
-			user.setNickname(randomNickname);
+
+			// 새 프로필 생성 및 저장
+			profile = UserProfile.builder()
+					.nickname(randomNickname)
+					.user(savedUser)
+					.build();
+
+			userProfileRepository.save(profile);
 		}
 
-		return userRepository.save(user);
+		return savedUser;
 	}
 
 	private String generateUniqueNickname() {
@@ -65,7 +84,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
 		do {
 			nickname = "User" + UUID.randomUUID().toString().substring(0, 8);
-			isUnique = !userRepository.existsByNickname(nickname);
+			isUnique = !userProfileRepository.existsByNickname(
+					nickname);  // UserRepository -> UserProfileRepository로 변경
 		} while (!isUnique);
 
 		return nickname;

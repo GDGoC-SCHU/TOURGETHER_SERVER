@@ -16,8 +16,8 @@ spring:
     show-sql: true
 
   twilio:
-    account-sid: ${TWILIO_ACCOUNT_SID}  # Twilio 계정 식별자
-    auth-token: ${TWILIO_AUTH_TOKEN}    # Twilio API 인증 토큰
+    # Twilio 계정 식별자
+    # Twilio API 인증 토큰
     verify-service-sid: ${TWILIO_VERIFY_SERVICE_SID}  # Twilio Verify 서비스 SID
 
   security:

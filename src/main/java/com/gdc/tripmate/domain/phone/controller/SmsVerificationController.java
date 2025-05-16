@@ -1,6 +1,6 @@
 package com.gdc.tripmate.domain.phone.controller;
 
-import com.gdc.tripmate.domain.phone.dto.SmsVerificationResponse;
+import com.gdc.tripmate.domain.phone.dto.response.SmsVerificationResponse;
 import com.gdc.tripmate.domain.phone.service.SmsVerificationService;
 import com.gdc.tripmate.global.security.dto.TokenResponse;
 import java.util.HashMap;
@@ -27,13 +27,21 @@ public class SmsVerificationController {
 	 */
 	@PostMapping("/phone/sendVerification")
 	public ResponseEntity<Map<String, Object>> sendVerification(
-			@RequestBody Map<String, String> request) {
-		log.info("인증 코드 발송 요청: phoneNumber={}", request.get("phoneNumber"));
+			@RequestBody Map<String, Object> request) {
+
+		log.info("인증 코드 발송 요청: phoneNumber={}, userId={}",
+				request.get("phoneNumber"), request.get("userId"));
 
 		try {
+			// userId가 있는 경우 Long으로 변환
+			Long userId = null;
+			if (request.get("userId") != null) {
+				userId = Long.parseLong(request.get("userId").toString());
+			}
+
 			// 서비스 메서드 호출 (generateVerificationCode)
 			SmsVerificationResponse response = smsVerificationService.generateVerificationCode(
-					request.get("phoneNumber"), null);
+					(String) request.get("phoneNumber"), userId);
 
 			Map<String, Object> result = new HashMap<>();
 			result.put("success", response.isSuccess());
@@ -56,16 +64,23 @@ public class SmsVerificationController {
 	 */
 	@PostMapping("/phone/verifyCode")
 	public ResponseEntity<Map<String, Object>> verifyCode(
-			@RequestBody Map<String, String> request) {
-		log.info("인증 코드 확인 요청: phoneNumber={}, code={}",
-				request.get("phoneNumber"), request.get("code"));
+			@RequestBody Map<String, Object> request) {
+
+		log.info("인증 코드 확인 요청: phoneNumber={}, code={}, userId={}",
+				request.get("phoneNumber"), request.get("code"), request.get("userId"));
 
 		try {
+			// userId가 있는 경우 Long으로 변환
+			Long userId = null;
+			if (request.get("userId") != null) {
+				userId = Long.parseLong(request.get("userId").toString());
+			}
+
 			// 서비스 메서드 호출
 			TokenResponse tokenResponse = smsVerificationService.verifyCode(
-					null, // providedUserId는 null로 전달 (SecurityUtils에서 추출)
-					request.get("phoneNumber"),
-					request.get("code"));
+					userId, // providedUserId를 전달
+					(String) request.get("phoneNumber"),
+					(String) request.get("code"));
 
 			Map<String, Object> result = new HashMap<>();
 			result.put("success", true);

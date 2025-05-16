@@ -1,4 +1,4 @@
-package com.gdc.tripmate.domain.phone.dto;
+package com.gdc.tripmate.domain.phone.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -9,7 +9,6 @@ import com.gdc.tripmate.global.security.customUser.CustomUserDetailsService;
 import com.gdc.tripmate.global.security.jwt.JwtAuthenticationFilter;
 import com.gdc.tripmate.global.security.jwt.JwtTokenProvider;
 import com.gdc.tripmate.global.security.oauth.OAuth2SuccessHandler;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Spring Security 설정 클래스
@@ -42,6 +39,7 @@ public class SecurityConfig {
 	private final CustomUserDetailsService customUserDetailsService;
 	private final SessionService sessionService;
 	private final CookieService cookieService;
+	private final CorsConfigurationSource corsConfigurationSource;  // Use @Primary bean from WebConfig
 
 	/**
 	 * 보안 필터 체인 설정
@@ -54,7 +52,7 @@ public class SecurityConfig {
 
 				// CORS 설정
 				.cors(cors -> cors
-						.configurationSource(corsConfigurationSource()))
+						.configurationSource(corsConfigurationSource))
 
 				// 세션 관리 설정 (무상태)
 				.sessionManagement(session -> session
@@ -71,8 +69,12 @@ public class SecurityConfig {
 						// 전화번호 인증 API 경로 허용 추가
 						.requestMatchers("/api/phone/**", "/api/phone/sendVerification",
 								"/api/phone/verifyCode").permitAll()
+						// 프로필 관련 공개 API 경로 허용
+						.requestMatchers("/api/user/nickname", "/api/tags").permitAll()
+						// 정적 리소스 접근 허용 (프로필 이미지 등)
+						.requestMatchers("/files/**").permitAll()
 						// userId가 경로에 포함된 API도 허용
-						.requestMatchers("/api/users/*/verifyPhone").authenticated()
+						.requestMatchers("/api/users/*/verifyPhone").permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.anyRequest().authenticated())
 
@@ -114,21 +116,5 @@ public class SecurityConfig {
 		HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();
 		repository.setHeaderName("X-CSRF-TOKEN");
 		return repository;
-	}
-
-	/**
-	 * CORS 설정 빈
-	 */
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:8081")); // 프론트엔드 URL
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("*"));
-		configuration.setAllowCredentials(true);
-
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
 	}
 }
