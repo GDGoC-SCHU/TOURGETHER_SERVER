@@ -18,7 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "user_profiles")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class UserProfile extends TimeStamp {
 
     /**

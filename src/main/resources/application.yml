@@ -1,4 +1,3 @@
-# application.yml
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/tourgether
@@ -14,6 +13,14 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
+    defer-datasource-initialization: true  # Hibernate 초기화 후 SQL 스크립트 실행
+
+  # SQL 초기화 설정 추가
+  sql:
+    init:
+      mode: always  # 항상 SQL 스크립트 실행
+      data-locations: classpath:data.sql  # 데이터 초기화 스크립트 위치
+      continue-on-error: true  # 오류 발생해도 계속 진행
 
   twilio:
     # Twilio 계정 식별자
@@ -48,7 +55,6 @@ spring:
       port: 6379
       host: localhost
 
-
 jwt:
   secret: ${JWT_SECRET_KEY:abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789}
   access-token-validity-in-seconds: 3600  # 1H
@@ -61,7 +67,7 @@ server:
 
 logging:
   level:
-#    org.springframework.security: DEBUG
+    #    org.springframework.security: DEBUG
     com.gdc.tripmate: DEBUG
-#    org.hibernate.SQL: DEBUG
+    #    org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

@@ -12,6 +12,7 @@ import com.gdc.tripmate.domain.user.repository.UserRepository;
 import com.gdc.tripmate.domain.user.status.Status;
 import com.gdc.tripmate.global.error.ResourceNotFoundException;
 import com.gdc.tripmate.global.util.FileUploadUtil;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -44,18 +45,18 @@ public class UserProfileServiceImpl implements UserProfileService {
 	@Transactional(readOnly = true)
 	public NicknameCheckDto checkNickname(String nickname) {
 		if (nickname == null || nickname.trim().isEmpty()) {
-			return NicknameCheckDto.builder()
-					.available(false)
-					.message("닉네임을 입력해주세요.")
-					.build();
+			NicknameCheckDto result = new NicknameCheckDto();
+			result.setAvailable(false);
+			result.setMessage("닉네임을 입력해주세요.");
+			return result;
 		}
 
 		boolean exists = userProfileRepository.existsByNickname(nickname.trim());
-
-		return NicknameCheckDto.builder()
-				.available(!exists)
-				.message(exists ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.")
-				.build();
+		
+		NicknameCheckDto result = new NicknameCheckDto();
+		result.setAvailable(!exists);
+		result.setMessage(exists ? "이미 사용 중인 닉네임입니다." : "사용 가능한 닉네임입니다.");
+		return result;
 	}
 
 	/**
@@ -72,33 +73,33 @@ public class UserProfileServiceImpl implements UserProfileService {
 
 		// 프로필이 아직 없는 경우
 		if (profile == null) {
-			return ProfileDto.builder()
-					.userId(user.getId())
-					.email(user.getEmail())
-					.profileImageUrl(user.getPicture())
-					.phoneNumber(user.getPhoneNumber())
-					.phoneVerified(user.isPhoneVerified())
-					.profileCompleted(false)
-					.build();
+			ProfileDto dto = new ProfileDto();
+			dto.setUserId(user.getId());
+			dto.setEmail(user.getEmail());
+			dto.setProfileImageUrl(user.getPicture());
+			dto.setPhoneNumber(user.getPhoneNumber());
+			dto.setPhoneVerified(user.isPhoneVerified());
+			dto.setProfileCompleted(false);
+			return dto;
 		}
 
 		List<String> tagNames = profile.getProfileTags().stream()
 				.map(profileTag -> profileTag.getTag().getName())
 				.collect(Collectors.toList());
 
-		return ProfileDto.builder()
-				.userId(user.getId())
-				.email(user.getEmail())
-				.nickname(profile.getNickname())
-				.bio(profile.getBio())
-				.gender(profile.getGender())
-				.birthDate(profile.getBirthDate())
-				.profileImageUrl(user.getPicture())
-				.phoneNumber(user.getPhoneNumber())
-				.phoneVerified(user.isPhoneVerified())
-				.tags(tagNames)
-				.profileCompleted(profile.isProfileCompleted())
-				.build();
+		ProfileDto dto = new ProfileDto();
+		dto.setUserId(user.getId());
+		dto.setEmail(user.getEmail());
+		dto.setNickname(profile.getNickname());
+		dto.setBio(profile.getBio());
+		dto.setGender(profile.getGender());
+		dto.setBirthDate(profile.getBirthDate());
+		dto.setProfileImageUrl(user.getPicture());
+		dto.setPhoneNumber(user.getPhoneNumber());
+		dto.setPhoneVerified(user.isPhoneVerified());
+		dto.setTags(tagNames);
+		dto.setProfileCompleted(profile.isProfileCompleted());
+		return dto;
 	}
 
 	/**
@@ -139,9 +140,14 @@ public class UserProfileServiceImpl implements UserProfileService {
 
 		// 프로필 이미지 업로드 처리
 		if (profileImage != null && !profileImage.isEmpty()) {
-			String imageUrl = fileUploadUtil.uploadFile(profileImage, "profile");
-			user.setPicture(imageUrl);
-			userRepository.save(user);
+			try {
+				String imageUrl = fileUploadUtil.uploadFile(profileImage, "profile");
+				user.setPicture(imageUrl);
+				userRepository.save(user);
+			} catch (Exception e) {
+				log.error("프로필 이미지 업로드 중 오류 발생: {}", e.getMessage(), e);
+				// 이미지 업로드 실패해도 계속 진행
+			}
 		}
 
 		// 태그 처리 - 전부 삭제 후 새로 등록
@@ -149,9 +155,13 @@ public class UserProfileServiceImpl implements UserProfileService {
 			profile.removeTags(); // 기존 태그 제거
 
 			for (String tagName : profileDto.getTags()) {
-				Tag tag = tagRepository.findByName(tagName)
-						.orElseGet(() -> tagRepository.save(new Tag(tagName)));
-				profile.addTag(tag);
+				try {
+					Tag tag = tagRepository.findByName(tagName)
+							.orElseGet(() -> tagRepository.save(new Tag(tagName)));
+					profile.addTag(tag);
+				} catch (Exception e) {
+					log.error("태그 처리 중 오류 발생 (태그: {}): {}", tagName, e.getMessage(), e);
+				}
 			}
 		}
 
@@ -166,19 +176,19 @@ public class UserProfileServiceImpl implements UserProfileService {
 				.map(profileTag -> profileTag.getTag().getName())
 				.collect(Collectors.toList());
 
-		return ProfileDto.builder()
-				.userId(user.getId())
-				.email(user.getEmail())
-				.nickname(updatedProfile.getNickname())
-				.bio(updatedProfile.getBio())
-				.gender(updatedProfile.getGender())
-				.birthDate(updatedProfile.getBirthDate())
-				.profileImageUrl(user.getPicture())
-				.phoneNumber(user.getPhoneNumber())
-				.phoneVerified(user.isPhoneVerified())
-				.tags(tagNames)
-				.profileCompleted(updatedProfile.isProfileCompleted())
-				.build();
+		ProfileDto dto = new ProfileDto();
+		dto.setUserId(user.getId());
+		dto.setEmail(user.getEmail());
+		dto.setNickname(updatedProfile.getNickname());
+		dto.setBio(updatedProfile.getBio());
+		dto.setGender(updatedProfile.getGender());
+		dto.setBirthDate(updatedProfile.getBirthDate());
+		dto.setProfileImageUrl(user.getPicture());
+		dto.setPhoneNumber(user.getPhoneNumber());
+		dto.setPhoneVerified(user.isPhoneVerified());
+		dto.setTags(tagNames);
+		dto.setProfileCompleted(updatedProfile.isProfileCompleted());
+		return dto;
 	}
 
 	/**
@@ -188,6 +198,8 @@ public class UserProfileServiceImpl implements UserProfileService {
 	@Transactional
 	public ProfileDto setupProfile(Long userId, ProfileSetupDto profileSetupDto,
 			MultipartFile profileImage) {
+		log.info("프로필 설정 시작 - userId: {}, nickname: {}", userId, profileSetupDto.getNickname());
+		
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다. ID: " + userId));
 
@@ -204,13 +216,12 @@ public class UserProfileServiceImpl implements UserProfileService {
 			}
 
 			// 새 프로필 생성
-			profile = UserProfile.builder()
-					.nickname(profileSetupDto.getNickname())
-					.bio(profileSetupDto.getBio())
-					.gender(profileSetupDto.getGender())
-					.birthDate(profileSetupDto.getBirthDate())
-					.user(user)
-					.build();
+			profile = new UserProfile();
+			profile.setNickname(profileSetupDto.getNickname());
+			profile.setBio(profileSetupDto.getBio());
+			profile.setGender(profileSetupDto.getGender());
+			profile.setBirthDate(profileSetupDto.getBirthDate());
+			profile.setUser(user);
 		} else {
 			// 기존 프로필 업데이트
 			if (profileSetupDto.getNickname() != null && !profileSetupDto.getNickname()
@@ -235,45 +246,63 @@ public class UserProfileServiceImpl implements UserProfileService {
 		}
 
 		// 프로필 이미지 업로드 처리
+		String imageUrl = null;
 		if (profileImage != null && !profileImage.isEmpty()) {
-			String imageUrl = fileUploadUtil.uploadFile(profileImage, "profile");
-			user.setPicture(imageUrl);
-			userRepository.save(user);
+			try {
+				imageUrl = fileUploadUtil.uploadFile(profileImage, "profile");
+				user.setPicture(imageUrl);
+				userRepository.save(user);
+				log.info("프로필 이미지 업로드 성공: {}", imageUrl);
+			} catch (Exception e) {
+				log.error("프로필 이미지 업로드 중 오류 발생: {}", e.getMessage(), e);
+				// 이미지 업로드 실패해도 계속 진행
+			}
 		}
 
 		// 태그 설정
+		List<String> addedTags = new ArrayList<>();
 		if (profileSetupDto.getTags() != null && !profileSetupDto.getTags().isEmpty()) {
 			for (String tagName : profileSetupDto.getTags()) {
-				Tag tag = tagRepository.findByName(tagName)
-						.orElseGet(() -> tagRepository.save(new Tag(tagName)));
-				profile.addTag(tag);
+				try {
+					Tag tag = tagRepository.findByName(tagName)
+							.orElseGet(() -> {
+								log.info("새 태그 생성: {}", tagName);
+								return tagRepository.save(new Tag(tagName));
+							});
+					profile.addTag(tag);
+					addedTags.add(tagName);
+				} catch (Exception e) {
+					log.error("태그 처리 중 오류 발생 (태그: {}): {}", tagName, e.getMessage(), e);
+				}
 			}
 		}
+		log.info("추가된 태그: {}", addedTags);
 
 		// 프로필 완성 여부 체크
 		checkProfileCompleteness(user, profile);
 
 		// 프로필 저장
 		UserProfile savedProfile = userProfileRepository.save(profile);
+		log.info("프로필 저장 완료 - 프로필ID: {}, 완료 여부: {}", savedProfile.getId(), savedProfile.isProfileCompleted());
 
 		// 설정된 프로필 정보 반환
 		List<String> tagNames = savedProfile.getProfileTags().stream()
 				.map(profileTag -> profileTag.getTag().getName())
 				.collect(Collectors.toList());
 
-		return ProfileDto.builder()
-				.userId(user.getId())
-				.email(user.getEmail())
-				.nickname(savedProfile.getNickname())
-				.bio(savedProfile.getBio())
-				.gender(savedProfile.getGender())
-				.birthDate(savedProfile.getBirthDate())
-				.profileImageUrl(user.getPicture())
-				.phoneNumber(user.getPhoneNumber())
-				.phoneVerified(user.isPhoneVerified())
-				.tags(tagNames)
-				.profileCompleted(savedProfile.isProfileCompleted())
-				.build();
+		ProfileDto dto = new ProfileDto();
+		dto.setUserId(user.getId());
+		dto.setEmail(user.getEmail());
+		dto.setNickname(savedProfile.getNickname());
+		dto.setBio(savedProfile.getBio());
+		dto.setGender(savedProfile.getGender());
+		dto.setBirthDate(savedProfile.getBirthDate());
+		dto.setProfileImageUrl(user.getPicture());
+		dto.setPhoneNumber(user.getPhoneNumber());
+		dto.setPhoneVerified(user.isPhoneVerified());
+		dto.setTags(tagNames);
+		dto.setProfileCompleted(savedProfile.isProfileCompleted());
+		return dto;
 	}
 
 	/**
